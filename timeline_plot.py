@@ -2,6 +2,9 @@
 Christopher Rose
 CSCI-141
 timeline_plot.py
+I've never encountered worse instructions than the instructions for figuring out this part of the final project.
+Everything was going fine while working on this project until I reached this portion and the example given under gap_plot
+was hilariously bad.
 """
 
 import numpy.ma as ma
@@ -29,10 +32,9 @@ def build_plottable_array(xyears, regiondata):
         if year in year_dict:
             corrected_data.append(year_dict[year])
         else:
-            corrected_data.append('None')
-    mask = [(el == "None") for el in corrected_data]
+            corrected_data.append(None)
+    mask = [(el is None) for el in corrected_data]
     masked_data = ma.masked_array(corrected_data, mask=mask)
-    print(masked_data)
     return masked_data
 
 
@@ -90,13 +92,36 @@ def plot_HPI(data, regionlist):
     year0 = year_finder(data)[0]
     year1 = year_finder(data)[1]
     year_list = [i for i in range(year0, year1+1)]
+    plt.gca().yaxis.set_major_locator(mticker.MultipleLocator(base=25))
     for region in regionlist:
         plot_data = build_plottable_array(year_list, data[region])
         plt.plot(year_list, plot_data, '*', linestyle='-', label=region)
     plt.title('Home Price Index: ' + str(year0) + "-" + str(year1))
     plt.autoscale(True, 'both', True)
-    mticker.AutoLocator()
     plt.legend()
+    plt.show()
+
+
+def plot_whiskers(data, regionList):
+    """
+    Plots whisker data for the data and regions given
+    :param data: dictionary mapping a state or zip code to a list of AnnualHPI objects
+    :param regionList: list of key values whose type is string
+    :return: NoneType
+    """
+    meanpointprops = dict(marker='D', markeredgecolor='black',
+                          markerfacecolor='firebrick')
+    data_list = []
+    data_labels = []
+    for region in regionList:
+        plot_data = []
+        for object in data[region]:
+            plot_data.append(object.index)
+        # turn this into a list of index values, but don't mask it!
+        data_list.append(plot_data)
+        data_labels.append(region)
+    plt.boxplot(data_list, meanprops=meanpointprops, meanline=False, showmeans=True, labels=data_labels)
+    plt.title("Home Price Index Comparison. Median is a line. Mean is a diamond.")
     plt.show()
 
 
